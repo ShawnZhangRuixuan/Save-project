@@ -1,0 +1,16 @@
+例如b[271]=i
+PUSHSTATADDR 0 会创造一个index 0 给value b
+LOADFROMADDR 会随着PUSHSTATADDR 提取value b因为PUSHSTATADDR的原因，value b 在第一个index
+PUSHNUM 271 给予不是负数的数字
+ADDTOPTR 将PUSHNUM给予的数字回馈给LOADFROMADDR给予的value == B[0]+271
+PUSHLOCCADDR 1 由于index 0已被value b占有 将未知数 i 设置在index 1 
+LOADFROMADDR 跟随着PUSHLOCADDR，LOADFROMADDR会提取前一个指令的index。 类似与cd
+SAVETOADDR 当设置完成value的index后，保存当前数据。
+当要print时
+PUSHSTATADDR 0
+LOADFROMADDR
+PUSH 271
+ADDTORTR
+LOADFROMADDR
+WIRITEINT 当要print的东西有数字 WIRITEINT会打印number
+WRITELNOP 写在下一行，

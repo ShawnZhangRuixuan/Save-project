@@ -1,0 +1,260 @@
+# Topic 5 CPU scheduling
+
+- CPU introduction
+  - cpu分配是多处理器从操作系统的基础，通过转移cpu在各个进程中，使得操作系统更效率。
+  - CPU分配的几个算法
+  - 单处理器中，只有一个进程可以运行，其他的进程必须等待cpu闲置时才可以运行
+  - 多路进程的目的在于让多个进程同时运行最大化cpu的效率
+  - 一个进程一直运行直到它需要I/O需求
+  - 因此在一个简单系统中，cpu会处于闲置状态，waiting time会被浪费因为cpu一直等待一个进程
+  - 几个进程保存在内存中，当一个进程必须等待时，操作系统会让cpu去执行别的进程
+- CPU and I/O burst cycle
+  - 进程会处于两个状态间交替，cpu执行以及I/O wait 
+  - 进程在cpu的执行下进行时称作cpu burst，同样I/O需求时叫I/O burst。
+- Preemptive and non-preemptive scheduling
+  - Dispatcher（调度器）：是一个模块，它将cpu的控制权交给短期选择的进程，调度器运行的非常快因为进程间的切换非常的频繁且迅速。调度停止一个进程并开始另一个进程的时间被称作dispatch latency
+  - cpu scheduling会做决定基于Four circumstances：
+    - 当进程从运行状态转换到等待状态
+    - 当进程从运行状态转换到准备状态（例如打断发生）
+    - 等待状态进入准备状态（完成I/O)
+    - 当进程结束。
+    - 第二个和第三个都是进入准备状态，但决定把cpu给哪一个进程是一个问题因此第一个和第四个称作nonpreemptive而其他的叫preemptive。preemptive意味着cpu可以从那个进程被拿掉。
+- Scheduling criteria
+  - CPU utlization:让cpu尽量保持繁忙。可以靠百分比1-100衡量，40不繁忙，90非常繁忙
+  - Throughput：用来衡量cpu完成任务的速度
+  - Turnaround time：计算等待获取内存，等待进入准备队列和执行在cpu以及操作io所花费的时间
+  - waiting time：计算进程在准备队列花费的时间
+  - response time：计算当提交需求后知道第一个回复产生期间需要的时间
+- Scheduling algorithms （first-come，first-served scheduling）
+  - 最为简单的算法，最先需求cpu的进程将会被分配cpu。
+  - 通常fcfs的平均等待时间非常的长（例如p1需要24msp2需要3msp3需要3ms，因此当p3获取cpu控制权时它等待了27秒而平均等待时间为（0+24+27）/3=17ms
+  - 如果把最长的p1放在最后，（6+0+3）/3=3ms 平均等待时间极大缩短
+  - FCFS is nonpreemptive，其他进程无法抢占cpu
+  - 如果队列第一个的进程需要很长的cpu burst时间，其他短进程则需要很长的等待时间
+
+![image-20211216002801887](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211216002801887.png)
+
+- Example on fcfs
+  - 当每个进程有arrival time时，arrival time最小的进程将会被第一个执行，而第一个执行的进程的burst time会减去第二个最小的arrival time
+  - Turn around time=completion time-arrival time
+  - Waitng time=Turn around time-burst time![image-20211216010139152](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211216010139152.png)
+
+![image-20211216011400655](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211216011400655.png)
+
+- shortest-job-first-scheduling
+  - 算法基于下一个进程的cpu burst的长度，当cpu闲置时，它会分配到下一个cpu burst最小的进程
+  - SJF可以是preemptive或者nonpreemptive
+  - ![image-20211216014056208](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211216014056208.png)
+  - waiting time=tiotal waiting time-no. of ms process executed-arrival time
+  - 缺点在于非常困难去知道下一个cpu burst的长度
+- Priority scheduling
+  - 每个进程会被分配优先级，cpu会分配给优先级最高的
+  - 同样时preemptive或者nonpreemptive，如果时preemptive当更高优先级的进程到达时，它会抢占cpu。如果是nonpreemptive，它会将更高优先级的进程放入准备队列
+  - 缺点在于如果新来的进程一直是高优先级，而低优先级的进程会无限期的等待cpu，所以解决方案是给予进程年纪如果一个进程等待过于久，它会提高它的优先级
+- Round-Robin Scheduling
+  - 它是分时系统设计并且是preemption
+  - 准备队列会被当成一个圆圈队列
+  - 如果cpu burst的时间比time quantum少，进程会自动释放cpu的控制权，如果cpu burst比time quantum长打断进程，进程会放进准备队伍的尾巴上未完成的内容会被记入在context switch
+  - 其他的计算RR的waiting time公式：waiting time=last start time-arrival time-(preemption*time quantum)
+- Multilevel queue scheduling
+  - 会创建分组并为每一个进程分组例如分成foreground processes和background processes，两组会有不同的回应时间需求和不同的调配需求
+  - 进程会被分配进队列中基于他们不同的内存大小，优先级以及种类
+  - 每一个队列都有他们自己的分配算法
+- Multilevel feedback-queue scheduling
+  - 允许进程移动到别的队列，例如如果一个进程使用过久的cpu时间它会被移动到低优先级队列，同样如果一个进程等待过久也会被移动到高优先级队列
+  - 当第一优先级的Q1的进程没有执行完时它会被传进Q2的尾巴等待执行
+  - 要点：
+    - The number of queues
+    - The scheduling algorithm for each queue
+    - 使用的方法去证明什么时候进程应该去高优先级或低优先级
+    - 什么方法分配进程进入不同的队列
+
+
+
+# Topic 6 Synchronization
+
+- introduction
+  - 一个合作（可共享数据）的进程可以影响或被影响其他正在进行的进程
+  - 并发执行共享数据可能导致数据不完整，所以有几个机制让进程有序的共享逻辑的地址空间
+  - 当counter 5 同时++或--时，counter的数值可能会是4，5或者6因此不知道哪一个值是正确的
+  - 机器语言需要把counter的value传输到register，register记录新的value时会传回给counter。但如果++和--同时运行时register无法把正确的value及时回馈给counter。
+- Race condition：当几个进程同时输出不同的数据在同一个value上
+
+The critacal-section problem
+
+- 每一个进程都有一个代码段叫做critical section 帮助进程更改共同的变量，更新列表或者写入文件等
+- 没有两个进程可以同一时间执行critical section，而critical section就创建了一个协议让进程之间互相合作
+- 几个关于运行critical section的需求
+  - 每一个进程都需要请求进入critical section
+  - 实现这个请求的代码部分是入口部分
+  - critical section 也可以让进程退出section
+  - 剩下的代码是剩余的section
+- 一个解决方案对于critical section 问题
+  - mutual exclusion：当一个进程在进行她的critical section 其他的进程无法执行他们的critical section
+  - progress：当一个进程在执行remainder sections时，他无法请求进入critial section 并且不能无限期的等待
+  - bounded waiting：当一个进程已经请求需求critical section时，其他进程请求需求的次数是有限制的
+- peterson' solution
+  - 基础的软件对critical section解决方案
+  - peterson‘s solution仅限于在进程交替于critical section和remainder secction中进行
+  - 它需要两个进程共享数据 return（指示轮到谁进入其临界区）和boolean flag[]（如果进程准备进入critical section）。
+  - ![image-20211216192146450](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211216192146450.png)
+  - Flag[]代表哪一个进程准备进入critical section，而peterson的方法是让另一个想要进入的进程先进入critical section 因此有一个while loop来确定是否另一个进程要进入crtical secton并且turn是否等于那个进程。但while loop会一直循环当是True的时候，因此最后第一个flag[]的进程会进入critical section。因此最后一个设turn value的进程会一直在while loop循环
+  -  基于两个进程之间进行并且不适用于现代架构
+- Test and set lock
+  - 共享lock variable 表示0或者1，如果是0代表unlock 如果是1代表lock，如果进入critical section他需求0或者1
+  - 如果它是lock（1），代表critical section是lock直到section是free
+  - 如果是unlock（0），进程会进入section并且section会变成lock  
+  - ![image-20211217011006894](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211217011006894.png)
+  - 一开始target都是等于0，而进入while loop时，0代表false，while loop就不会一直循环从而进入critical section。当第一个进程进入section时，target会return 1，而1代表true，第二个进程会一直在while loop一直循环等待第一个进程完成他的section
+- semaphores
+  - 通过使用称为信号量的简单整数值来管理并发由Edsger Dijkstra提出
+  - 在线程中共享
+  - 只通过**wait（）和signal()**来访问
+  - wait通常用p代表意味着to test。而signal由v代表意味着to increment
+  - 当一个进程修改semaphore值时，其他的进程不能修改
+  - binary semaphore
+    - 0 or 1
+    - 当第一个进程进入section时，它会把value设为0而其他的进程会一直在while loop循环，当第一个进程完成section后，它会call v去让value变成1，第二个进程会跳出while loop
+  - counting semaphore
+    - 它的值范围不受限制，它可以被使用去控制访问多个实例的资源
+- disadvantages of semaphores
+  - 会造成busy waiting：一直在while loop循环
+  - 浪费cpu循环导致其他进程不效率
+  -  为了不让进程一直循环在while loop而导致的cpu不效率，我们可以让进程进入等待队列
+  - deadlock
+    - 如果两个或更多的进程在无限期的等待基于只有一个进程在等待队列
+- The bounded-buff problem
+  - 当buff满时，producer不能继续放入data
+  - 当buff空时，consumer不能移除data
+  - producer和consumer不能同时移除或放入data
+  - m（mutex）：binary semaphore用来获取或释放锁
+  - empty：用来代表buff中空的位置有多少个
+  - full：用来代表buff中那些位置是满的
+- The readers-writer problem
+  -  当读取时，无能写入data，同意写入时，不能读取data
+  - mutex：使用二进制代表排斥功能当readcount在更新（当reader进入或离开section)
+  - wrt:二进制，共同写入或读取进程
+  - readcount：计算多少个进程正在进行读取
+- The dining-philosophers problem
+  - 例如当一个人在圆桌吃饭时它需要两个叉子。当如果第一个人拿了两个叉子，第二个最多只能拿到1个叉子。因此避免相邻的两个人在同一时间吃饭。或者有一个人会只能拿起一个叉子
+  - 使用wait（)当一个人拿起了叉子
+  - signal（）当一个人放下了叉子
+  - 但这同样会造成deadlock因为当五个人同时饿了同时拿起左手的叉子时，它们都无法再拿起第二个叉子因此设置最多四个人同时拿起叉子或者设置一个人只允许他在两个叉子都可用的情况下才能拿起
+- Monitors
+  -  为进程同步提供了一个方便效率的机制 
+  - 声明的variable在function中或者body中 它们可以互相share
+  - 共享的data只能是在monitor里声明的
+  - 本地的procedure只能访问它属于的monitor
+  - 同一时间只能一个procedure访问monitor
+  - 使用wait和signal参与变量。
+  - x.wait意味着process参与这次操作直到其他process（x.signal())参与就会暂停
+  - x.signal()会恢复被暂停的process
+- using monitors to solve dining-philosophers
+  - 同意会导致deadlock
+  - enum{think,hungry,eating}state[5] 列出了三种可能存在的状态以及5的数组代表五个人
+  - state[i]=eating 代表人物i要吃东西并且它相邻的人没有在吃东西(state)[(i+4)%5]!=eating) and (state[(i+1)%5]!=eating) 
+
+
+
+# Topic 8 main memory
+
+- ​	Memory management
+  - main memory == RAM
+  - 我们必须保持几个进程在内存中并且分享内存。问题是内存如何影响系统性能
+  - 把桌子比作main memory，书架比作secondary memory。当你需要好几本书作为参考做题时，由于书桌太小，你无法放下很多书。因此，main memory的提高有效的帮助提高性能
+- basic hardware
+  - 内存储存着大量的数组每一个数字都有他们自己的地址
+  - cpu只能直接访问主内存和处理器中的寄存器
+  - 机器只会从内存中提取地址，但不会从第二方内存提取地址
+  - reigister可以访问cpu列表中的一个
+  - 而main memory可以访问多个
+  - 由于频繁的访问内存是无法忍受的，因此补救方案是加更快的内存如cache：在cpu与main memory中间
+  - 使用base（从哪里开始）和limit（限制的数量）去限制address number的进程才能访问
+- address binding
+  - 程序一般都储存在disk里，为了能执行程序，需要把程序放入内存中否者cpu无法访问程序
+  - Input queue---select a process ---- loads it into memory--- executes and accesses instruction and data from memory---process terinates----memory space is declared avaiable
+- Logical vs physical address space
+  - locgical :由cpu生成的地址
+  - physical：被加载进内存地址寄存器的内存
+  - cpmpile-time和loadtime的方法生成相同的logical和physical地址
+  - execution-time方案导致不一样的logical 和 physical地址
+  - Logical address space是由程序生成的logical address
+  - physical address space是由这些逻辑地址对应的所有物理地址的集合
+  - 为了让两个address匹配，使用硬件memory-management unit(MMU)
+- dynamic loading
+  - 如果程序过大无法加载进内存，只会运行需要的部分，并且事务会被存在disk并且是一个relocatable load format
+  - advantage
+    - 无用的事务不会被加载
+    - 不用加载大量的code
+- dynamic linking and shared libraries
+  - system libraries:static and dynamic linking
+    - static linking:每个程序都有自己重复的data。例如家庭里的每个人共用一个冰箱，如果每个人都有一个自己的冰箱，那只会浪费空间和费用，这就是它的缺点
+    - dynamic linking:检查事务是否已经在内存中，如果没有，加载进内存
+  - dynamically linked libraries
+    - stub：小部分的code去大概的定位本地内存文库的事务，或者如何去加载文库如果事务没有展现
+- swapping
+  - 当进程完成操作时，把进程换到disk储存，当需要执行时再把进程换进来，例如RR schedueling.
+  - 进程换出去的后，系统会记录address，当下次进程换进去执行时，还是在同一个address 
+  - 如果是execution time，进程会被换进不同的内存空间
+  - 使用cpu scheduler决定要执行的进程，并且call dispatcher去检查是否下一个进程在不在memory如果不在或者内存没有多余的地方，它会把内存换出去并换进想要的进程
+- swap time
+  - 使用到context-switch
+  - 当进程是空闲时他才可以被swap尽管被I/O访问
+- memory allocation
+  - 将内存变成几个部分，每个部分都包含第一个进程，当一个部分free后，从输入队列选择一个进程加载进那个部分
+  - 当进程过大时，内存部分会组合成成大部分来加载进程
+  - 同意如果部分只有一个而有两个小进程，内存部分同样可以分裂成两个来加载两个进程
+- dynamic storage allocation problem
+  - first fit:只要部分内存足够大 就把进程放进去。当内存部分不够后进程只能等待
+  - best fit：会让进程寻找适合大小的部分内存
+  - worst fit：寻找最大的内存大小无论进程的大小是多少
+- fragmentation
+  - 在进程加载或被移除从内存里，空闲的内存空间会被破开进小部分进入fragmentation
+  - External fragmentation
+    - 如果部分内存不是连续在一起的，他们无法结合成大内存处理进程
+    - solution：从新分配已分配的内存部分后，空闲内存部分就会变成连续在一起
+  - Internal fragmentation
+    - 当一个大内存部分在运行进程时还存有过多的内存时，他就是internal fragmentation
+- paging
+  - external fragmentation的解决方案
+  - 允许physical address space of process 不是连续性的
+  - 将physical memory分成同样大小的叫做frames
+  - 将loical memory 分成同样大小的叫pages
+- page table
+  - 为了追踪哪一个frames里的page是来自哪一个pages里的page的哪一个部分
+  - page number（p）（index of page） 和page offset（d)（displacement）
+  - index给予page0，1，2，3.offset给予page[i]在哪一个physical memory的哪一个位置
+  - ((Frame *Page size)+Offest)去计算pages的每一个数据在frame的哪一个位置
+- Hardware implementation of page table
+  - 让page table有专用的寄存器
+  - 让page table 保持在main memory并且一个page table base register指向page table（以上两个都不效率）
+  - Translaton lookaside buffer（TLB）
+    - associative并且高效率内存，他有两个部分 A key和A value
+    - 如果page number被找到，frame number会立刻有效并被使用去访问内存
+    - 如果page number 没有找到，page table的memory reference会立马制成
+    - present/absent代表了page是否在main memory如果page不在main memory 它叫做page fault，并且value是0
+    - Protection aka read/write用来保护page，给予read或write的权限，0代表只能read，1代表可以read或write
+    - caching代表page是否能使用cache
+    - dirty代表page是否可以被修改
+    - reference代表page是否在最后一个时钟周期被引用过
+- shared pages
+  - 可以共享code
+  - 如果code是reentrant code，可以在不同的进程分享：无法在执行时改变code
+  - 如果分享code 只需要text内存加上（data space内存*数量）大大减少内存使用
+- Hashed page table
+  - 用来处理地址空间高过32bit的
+  - 每个入口的hash table都会有一个数组链接的元素hash到同一个地址
+  - 每一个element都有virtual page number， the value of the mapped page frame 和a pointer to the next element in the linked list
+- segementation
+  - 不是连续性的内存定位技术
+  - 不同于paging，进程不需要被分成pages
+  - 进程会被分成几个modules 被称为segments
+  - disk和main memory都被分为不同的size
+  - 每一个segment都会有他自己的名字和长度
+
+# Topic 9 virtual memory
+
+- 将硬盘变成运行内存的一种
+  - 如果没有虚拟内存，program address=ram address 会导致崩溃因为没有足够的内存对应相同的address
+- maping有效的帮助不是连续性的内存如果不够运行大的进程
+

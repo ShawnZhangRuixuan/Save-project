@@ -1,0 +1,108 @@
+(defun index (n l)
+    (if (equal n 1) (car l)
+        (if (null l) nil
+    (let (( x (index (- n 1) (cdr l))))
+         x))))
+
+(defun  min-first (l)
+    (if (null (cdr l)) l 
+    (let ((x (min-first (cdr l))))
+         (if (< (car l) (car x)) (cons (car l) x)
+             (cons (car x) (cos (car l) (cdr x)))))))
+
+(defun ssort (l)
+    (if (null l) nil
+        (if (null (cdr l)) l
+    (let* ((l1 (min-first l))
+           (x (ssort (cdr l1))))
+          (cons (car l1) x)))))
+
+(defun qsort (l)
+    (if (endp l) nil
+        (let ((pl (partition (cdr l) (car l))))
+             (cons (qsort(car pl)) (cons (car l)(qsort (cadr pl)))))))
+
+(defun merge-lists (l1 l2)
+    (if (< (car l1) (car l2))
+        (let ((x (merge-lists (cdr l1) l2)))
+             (cons (car l1) x))
+        (let ((x (merge-lists l1 (cdr l2))))
+             (cons (car l2) x))))
+
+(defun msort (l)
+    (if (null l) nil
+    (let ((x (split-list l)))
+         (merge-lists (msort (car x)) (msort (cadr x))))))
+
+(defun remove-adj-dupl (l)
+    (let ((x (remove-adj-dupl (cdr l))))
+         (if (equal (car l) (car x)) x
+             (cons (car l) x))))
+
+
+(DEFUN COUNT-REPETITIONS (L)
+(IF (ENDP L)
+NIL
+(LET ((X (COUNT-REPETITIONS (CDR L))))
+(IF (EQUAL (CAR L) (CADR L))
+(APPEND (LIST (LIST (+ 1 (CAAR X)) (CADAR X)))
+(CDR X))
+(APPEND (LIST (LIST 1 (CAR L))) X)))))
+              
+(defun subset (f l)
+    (if (null l) nil
+    (let ((x (subset f (cdr l))))
+         (if (funcall f (car l))
+             (cons (car l) x)
+             x))))
+(defun our-some (f l)
+    (let ((x (our-some f (cdr l))))
+         (if (funcall f(car l)) l
+             x)))
+
+(defun our-every (f l)
+    (let ((x (our-every f (cdr l))))
+         (if (funcall f (car l)) nil
+             'T)))
+(defun partition1 (f l p)
+    (let (( x (partition1 f(cdr l) p)))
+         (if (funcall f (car l) p)
+             (append (list (cons (car l) (car x))) (list (cadr x)))
+             (append (list (carx) (cons(car l)(cadr x)))))))
+(defun qsort1 (f l)
+    (let ((x (partition1 f l (car x))))
+         (if (null (car x) (cons(car l) (qsort (cdr l)))
+                   (let ((w (qsort f (car x)))
+                         (v (qsort f (cadr x))))
+                        (append w v))))))
+ (defun foo (f l)
+     (let* ((x (foo f (cdr l))) (ls (cdr l))
+          (y (list (cons (funcall f (car l)) ls)))
+                               (z(mapcar (lambda (a) (cons (car l) a))x)))
+           
+           
+(DEFUN FOO (F L)
+(IF (ENDP L)
+()
+(LET* ((X (FOO F (CDR L))) (LS (CDR L))
+(Y (LIST (CONS (FUNCALL F (CAR L)) LS)))
+(Z (MAPCAR (LAMBDA (A) (CONS (CAR L) A)) X)))
+(APPEND Y Z))))
+          
+(defun tr-add (l n)
+    (if (null l) n
+        (tr-add (cdr l) (+ (car l) n))))
+           
+           
+(DEFUN SLOW-PRIMEP (N)
+(IF (EQUAL (MOD (TR-FAC (- N 1) 1) N) (- N 1))
+T
+NIL))
+(defun t1 (m)
+    (cond ((endp (cdr m)) (mapcar #'list (car m)))
+        (t(mapcar #'cons (car m) (t1 (cdr m))))))
+(defun t2 (m)
+    (cond ((endp (cdar m)) (list(mapcar #'car m)))
+        (t(cons (mapcar #'cdr m)))))
+(defun t3 (m)
+    apply #'mapcar #'list m)

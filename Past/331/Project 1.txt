@@ -1,0 +1,55 @@
+Ruixuan Zhang
+Project part 3
+
+Q1: 
+SELECT memberID,memberName
+from member order by memberName;
+
+Q2:
+select itemID,quantity,time,date
+from LineItem
+where quantity>=12;
+
+Q3:
+Select name,address
+from Employee natural join store;
+
+Q4:
+SELECT empID
+from storeDepartment natural join Training natural join item
+where itemID=1;
+
+Q5:
+SELECT itemName,address
+FROM item,store;
+
+Q6:
+SELECT store.storeID, avg(wage) as average
+FROM Employee left outer join store on Employee.storeID=store.storeID
+group by storeID
+order by average desc;
+
+Q7:
+SELECT storeID,  sum((quantity *price)) as totalprice
+from Inventory
+group by storeID;
+
+Q8:
+SELECT distinct itemName,address
+from item natural join store left outer join Inventory on store.storeID=Inventory.storeID
+where price<20;
+
+Q9:
+SELECT storeID, count(isManager="Not") as totalnumber
+FROM Employee
+where totalnumber>10;
+
+Q10:
+SELECT storeID, count(*)
+from Transaction natural join Employee
+where memberID=1
+group by storeID;
+
+Bonus:
+select date,time,empID,(quantity*price) as totalcost
+from Transaction natural join LineItem natural join Inventory;
