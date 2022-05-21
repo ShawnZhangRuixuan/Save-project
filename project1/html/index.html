@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>OpenWeatherMap X FactsOfDog: Check city weather and return random fact of dog</title>
+		<style>
+			body, form{
+				margin:20px auto;
+				max-width:800px;
+				overflow-x:hidden;
+			}
+			fieldset{
+				display: flex;
+			}
+			input#location{
+				flex-grow:500;
+				margin: 0 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<form action="enter_city" method="get">
+			<fieldset>
+				<legend>OpenWeatherMap X FactsOfDog: Check city weather and return random fact of dog</legend>
+				<label for="location">Full name of city:</label>
+				<input id="location" name="location" type="text" />
+
+				<input type="submit" value="Submit city location" />
+			</fieldset>
+		</form>
+	</body>
+</html>
