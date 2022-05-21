@@ -1,0 +1,140 @@
+// Write a file asynchronously (for caching purposes)
+const fs = require("fs");
+
+fs.writeFile("file.txt", "Data");               // Invalid
+// Error: Callback must be a function. Received undefined
+//we can make it like:
+//fs.writeFile("file.txt","Data",undefined);
+
+fs.writeFile("file.txt", "Data", () => {});     // Correct
+// We supply it a callback that does nothing
+
+/* Example 01A: readline-a.js */
+
+const readline = require('readline');
+const rl = readline.createInterface({input: process.stdin});
+
+rl.on('line', (input) => {
+    console.log(`Received: ${input}`);
+});
+console.log("Enter any input and press enter to fire line event");
+
+
+/* Example 01B: readline-b.js */
+
+const readline = require('readline');
+const rl = readline.createInterface({input: process.stdin});
+const print = input => console.log(`Received: ${input}`);
+
+rl.on('line', print);
+rl.on('line', print);
+//have two emitter. it is to emit print twice, so, print will be printed twice
+
+console.log("Event Listeners will each indepently fire when an event is emitted");
+
+
+/* Example 01C: readline-c.js */
+
+const readline = require('readline');
+const rl = readline.createInterface({input: process.stdin});
+rl.setMaxListeners(32);	// Default is 10
+
+function print(input){
+	console.log(`Received: ${input}`);
+	rl.on('line', print); // also change on to once
+}
+
+rl.on('line', print);
+//since one rl emit is in function, it will cause recursively and will print 2^n. n is how many time you want output
+console.log("If you need more listeners use the method setMaxListeners");
+
+
+/* Example 02A: DayEmitter.js */
+
+const EventEmitter = require('events');
+class DayEmitter extends EventEmitter {
+    constructor(update_time = 240) {
+        super();
+        this.day = new Date();
+        this.update_time = update_time;        // How many ms should represent a day
+    }
+    start(){
+        this.day.setDate(this.day.getDate() + 1);                   // Adds 1 to Day
+        let mm = `${(this.day.getMonth() + 1 + "").padStart(2, "0")}`;    // 0 = Jan
+        let dd = `${(this.day.getDate() + "").padStart(2, "0")}`; // index of day is not start at 0
+        this.emit('newday', {mm_dd:`${mm}/${dd}`});       // Returns {mm_dd:"mm/dd"}
+        this.sleep();
+    }
+    sleep(){
+        setTimeout(() => this.start(), this.update_time);
+    }
+}
+module.exports = DayEmitter;
+
+/* Example 02B: index.js */
+
+const DayEmitter = require("./modules/DayEmitter");
+const day_emitter = new DayEmitter();
+day_emitter.on("newday", function({mm_dd}){
+    process.stdout.cursorTo(0, 0);
+    process.stdout.clearLine();
+    process.stdout.write(mm_dd);
+    process.stdout.cursorTo(0, 1);
+});
+console.clear();
+day_emitter.start();
+
+/* Example 03: ThisExample.js */
+class ThisExample {
+    constructor(){
+        this.data = "data";
+    }
+    wait(){
+        setTimeout(function(){ console.log(this); }, 0);	// Timeout Object
+        setTimeout(() => { console.log(this); }, 1000);		// ThisExample Object
+    } //=>里的this会捆绑class里的，而function不会
+}
+let example = new ThisExample();
+example.wait();
+
+
+/* Example 04A: BirthdayEmitter.js */
+const EventEmitter = require('events');
+class BirthdayEmitter extends EventEmitter {
+    constructor({birthdays, day_emitter}){
+        super(); //如果需要emit 就需要用到super method
+        day_emitter.on("newday", ({mm_dd}) => {
+            let month = Number.parseInt(`${mm_dd[0]}${mm_dd[1]}`);
+            let day   = Number.parseInt(`${mm_dd[3]}${mm_dd[4]}`);
+            birthdays
+                .filter(birthday => birthday.month === month && birthday.day === day)
+                .forEach(birthday => this.emit("birthday", {birthday}));
+        });
+    }
+}
+module.exports = BirthdayEmitter;
+
+/* Example 04B: index.js */
+const birthdays = require("./data/birthdays.json");
+const DayEmitter = require("./modules/DayEmitter");
+const BirthdayEmitter = require("./modules/BirthdayEmitter");
+
+const day_emitter = new DayEmitter();
+const birthday_emitter = new BirthdayEmitter({birthdays, day_emitter});
+let current_line = 1;
+
+birthday_emitter.on("birthday", function({birthday}){
+    process.stdout.cursorTo(0, current_line);
+    current_line++
+    console.log(birthday);
+});
+/*
+day_emitter.on("newday", function({mm_dd}){
+    process.stdout.cursorTo(0, 0);
+    process.stdout.clearLine();
+    process.stdout.write(mm_dd);
+    process.stdout.cursorTo(0, current_line);
+});
+*/
+console.clear();
+day_emitter.start();
